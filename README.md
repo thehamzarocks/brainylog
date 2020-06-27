@@ -67,3 +67,28 @@ Even the best minds turn to mush if riddled with garbage. **BrainyLog** is resil
 3. Log everything that warrants remembering!
 4. Use **BrainyLog** files when you want to organize your thoughts. But don't clutter them up - that's on you. Plus, files are incredibly useful for sharing.
 5. Take backups. Period.
+
+
+## Local Setup
+
+Want to fiddle around? Or give back? Get started with the source code on your own system:
+
+##### Clone the repo
+>$ git clone https://github.com/thehamzarocks/brainylog.git
+
+##### Install go for your env (look it up)
+
+##### Set the environment for go commands
+>$ $ go env -w GOBIN=/some_path/bin
+
+##### Build and install
+>$ go build
+>$ go install
+
+##### Create a default log.bl file
+>$ touch bin/log.bl
+
+##### You're good to go!
+>$ brainyLog v
+
+

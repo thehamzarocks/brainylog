@@ -28,6 +28,7 @@ func main() {
 	command := args[0]
 	switch command {
 	case "v":
+		CallFunc()
 		showBrainyLogVersion()
 	case "a":
 		logType, log := processAddArgs(args)
