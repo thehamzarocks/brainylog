@@ -86,7 +86,7 @@ Want to fiddle around? Or give back? Get started with the source code on your ow
 >$ go install
 
 ##### Create a default log.bl file
->$ touch bin/log.bl
+>$ touch log.bl
 
 ##### You're good to go!
 >$ brainyLog v

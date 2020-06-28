@@ -6,7 +6,7 @@ Adding a simple log of type info looks like this:
 
 >$ brainyLog a I love bananas
 
-This would create a line in brainyLog.bl:
+This would create a line in log.bl:
 >(2020-06-26T22:10:58+00:00) [1593209458000.0] vy665dg> I love bananas
 
 The timestamp with() is the actual UTC timestamp at which this log was added.

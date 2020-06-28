@@ -7,11 +7,11 @@ A **BrainyLog** command runs a shell script that parses the command-line argumen
 >##### Runs brainyLogVersion
 
 >$ brainylog -a Some Information
->##### Adds the log to the brainylog.bl file
+>##### Adds the log to the log.bl file
 >##### Runs brainyLogAdd
 
 >$ brainylog -g Some
->##### Gets the log from the brainylog.bl file
+>##### Gets the log from the log.bl file
 >##### Runs brainyLogGet
 
 **BrainyLog** commands are quick to execute but concurrent execution would be nice to have.

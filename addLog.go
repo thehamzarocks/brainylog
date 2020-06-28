@@ -42,7 +42,7 @@ func processAddArgs(args []string) (string, string) {
 }
 
 func addInfoLog(logType string, log string) {
-	filename := "bin/log.bl"
+	filename := defaultFilePath
 	line := processLine(logType, log, "info")
 	fmt.Println(filename, line)
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
@@ -57,7 +57,7 @@ func addInfoLog(logType string, log string) {
 }
 
 func addTaskLog(logType string, log string) {
-	filename := "bin/log.bl"
+	filename := defaultFilePath
 	line := processLine(logType, log, "task")
 	fmt.Println(filename, line)
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)

@@ -2,11 +2,11 @@
 
 Although you can create **BrainyLog** files to organize your thoughts, **BrainyLog** creates a special file for you by default. Any commands without a specified filename operate on this special "default" file.
 
-The file is called brainylog.bl and here's what the file looks like:
+The file is called log.bl and here's what the file looks like:
 
 #### Header
 Every brainylog file (.bl extension) has the following headers:
-name: The filename (brainylog.bl) in this case
+name: The filename (log.bl) in this case
 createdBy: The user who created this file
 createdTime: The creation timestamp
 

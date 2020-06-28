@@ -101,7 +101,7 @@ func getMetadataValue(line string, key string) string {
 
 func getBrainyLogMatches(searchType string, searchText string) {
 	fmt.Println("Getting matches for searchtext: ", searchText)
-	file, err := os.Open("bin/log.bl")
+	file, err := os.Open(defaultFilePath)
 	if err != nil {
 		fmt.Println("Error opening file for get!")
 	}
