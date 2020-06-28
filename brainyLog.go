@@ -16,12 +16,7 @@ func main() {
 	case "v":
 		showBrainyLogVersion()
 	case "a":
-		logType, log := processAddArgs(args)
-		if logType == "noLog" {
-			fmt.Println("Invalid usage. Pass in a message to be logged")
-			return
-		}
-		addBrainyLogLog(logType, log)
+		processBrainyLogWrite(args)
 	case "g":
 		searchText, err := processGetArgs(args)
 		if (err != nil) {
@@ -29,5 +24,7 @@ func main() {
 			return
 		}
 		getBrainyLogMatches(searchText)
+	case "t":
+		processTask(args)
 	}
 }

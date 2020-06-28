@@ -32,7 +32,7 @@ func getBrainyLogMatches(searchText string) {
 		currentLine := scanner.Text()
 
 		for _, keyword := range keywords {
-			if strings.Contains(currentLine, keyword) {
+			if strings.Contains(strings.ToLower(currentLine), strings.ToLower(keyword)) {
 				fmt.Println(currentLine)
 				break
 			}
