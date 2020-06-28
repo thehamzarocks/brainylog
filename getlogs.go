@@ -26,7 +26,7 @@ func processGetArgs(args []string) (searchType string, searchText string, err er
 	}
 
 	searchText = strings.Join(args[1:], " ")
-	return "all", "", nil
+	return "all", searchText, nil
 }
 
 func processBrainyLogRead(args []string) {
