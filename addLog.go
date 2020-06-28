@@ -2,34 +2,37 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
-	"os"
 
 	"github.com/google/uuid"
 )
 
 func processBrainyLogWrite(args []string) {
 	logType, log := processAddArgs(args)
-		if logType == "noLog" {
-			fmt.Println("Invalid usage. Pass in a message to be logged")
-			return
-		}
-		if logType == "info" {
-			addInfoLog(logType, log)
-		}
-		if logType == "task" {
-			addTaskLog(logType, log)
-		}
+	if logType == "noTaskLog || noInfoLog" {
+		fmt.Println("Invalid usage. Pass in a message to be logged")
+		return
 	}
+	if logType == "info" {
+		addInfoLog(logType, log)
+	}
+	if logType == "task" {
+		addTaskLog(logType, log)
+	}
+}
 
 func processAddArgs(args []string) (string, string) {
 	if len(args) < 2 {
-		return "noLog", ""
+		return "noInfoLog", ""
 	}
 
 	if args[1] == "-t" {
+		if len(args) < 3 {
+			return "noTaskLog", ""
+		}
 		log := strings.Join(args[2:], " ")
 		return "task", log
 	}
@@ -81,7 +84,7 @@ func processLine(logtype string, log string, logType string) string {
 	str.WriteString(strconv.FormatInt(epoch, 10))
 	str.WriteString(".0")
 	str.WriteString("]")
-	
+
 	if logType == "task" {
 		str.WriteString("(T-0)")
 	}
@@ -92,4 +95,3 @@ func processLine(logtype string, log string, logType string) string {
 
 	return str.String()
 }
-

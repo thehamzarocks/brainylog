@@ -18,12 +18,7 @@ func main() {
 	case "a":
 		processBrainyLogWrite(args)
 	case "g":
-		searchText, err := processGetArgs(args)
-		if (err != nil) {
-			fmt.Println("Invalid usage. Please pass in a search text")
-			return
-		}
-		getBrainyLogMatches(searchText)
+		processBrainyLogRead(args)
 	case "t":
 		processTask(args)
 	}
