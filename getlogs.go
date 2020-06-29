@@ -29,11 +29,11 @@ func processGetArgs(args []string) (searchType string, searchText string, err er
 	return "all", searchText, nil
 }
 
-func processBrainyLogRead(args []string) {
-	searchType, searchText, err := processGetArgs(args)
-	if err != nil {
-		fmt.Println("Invalid usage. Please pass in a search text")
-		return
+func processBrainyLogRead(commandMap map[string]string) {
+	searchText := commandMap["l"]
+	searchType, isTask := commandMap["t"]
+	if !isTask {
+		searchType = "all"
 	}
 	getBrainyLogMatches(searchType, searchText)
 }
