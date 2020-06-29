@@ -58,7 +58,7 @@ func isSingleValuedKey(command string, token string) bool {
 	case "g":
 		return token == "t"
 	case "t":
-		return token == "t" || token == "u"
+		return token == "t" || token == "n" || token == "u"
 	}
 	panic("Invalid command!")
 }
@@ -70,7 +70,7 @@ func isMultiValuedKey(command string, token string) bool {
 	case "g":
 		return token == "l"
 	case "t":
-		return token == "n"
+		return false
 	}
 	panic("Invalid command " + command + "!")
 }
