@@ -70,7 +70,7 @@ func isMultiValuedKey(command string, token string) bool {
 	case "g":
 		return token == "l"
 	case "t":
-		return false
+		return token == "n"
 	}
 	panic("Invalid command " + command + "!")
 }

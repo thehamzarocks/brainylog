@@ -1,17 +1,19 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 )
 
 func processTask(commandMap map[string]string) {
 	taskUUID, containsTaskUUID := commandMap["u"]
-	// temporaryPositionalNumber, containstemporaryPositionalNumber := commandMap["n"]
+	temporaryPositionalNumber, containstemporaryPositionalNumber := commandMap["n"]
 
-	if !containsTaskUUID {
-		fmt.Println("Task processing needs a task UUID!")
+	if !containsTaskUUID && !containstemporaryPositionalNumber {
+		fmt.Println("Task processing needs a task UUID or temporary positional number!")
 		return
 	}
 
@@ -23,7 +25,34 @@ func processTask(commandMap map[string]string) {
 	if toState != "create" && toState != "progress" && toState != "suspend" && toState != "cancel" && toState != "complete" {
 		fmt.Println("Invalid value " + toState + " for task toState!")
 	}
-	changeTaskState(taskUUID, toState)
+
+	if containsTaskUUID {
+		changeTaskState(taskUUID, toState)
+		return
+	}
+	if containstemporaryPositionalNumber {
+		matchingUUID := getUUIDFromTemporaryPositionalNumber(temporaryPositionalNumber)
+		changeTaskState(matchingUUID, toState)
+		return
+	}
+}
+
+func getUUIDFromTemporaryPositionalNumber(temporaryPositionalNumber string) string {
+	decodeFile, err := os.Open("log-mapping.bl")
+	if err != nil {
+		panic(err)
+	}
+	defer decodeFile.Close()
+
+	decoder := gob.NewDecoder(decodeFile)
+	positionalMappings := make(map[string]string)
+	decoder.Decode(&positionalMappings)
+
+	uuid, containsUUID := positionalMappings[temporaryPositionalNumber]
+	if !containsUUID {
+		panic("Unable to find line matching positional number " + temporaryPositionalNumber + "!")
+	}
+	return uuid
 }
 
 func changeTaskState(taskUUID string, toState string) {

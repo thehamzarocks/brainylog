@@ -2,8 +2,10 @@ package main
 
 import (
 	"bufio"
+	"encoding/gob"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -89,14 +91,37 @@ func getBrainyLogMatches(searchType string, searchText string) {
 
 	scanner := bufio.NewScanner(file)
 
+	positionalMappingToUUID := make(map[string]string)
+	currentPos := 0
+
 	for scanner.Scan() {
 		currentLine := scanner.Text()
 
 		for _, keyword := range keywords {
 			if lineMatches(currentLine, searchType, keyword) {
-				fmt.Println(currentLine)
+				positionalMappingToUUID[strconv.Itoa(currentPos)] = getUUID(currentLine)
+				fmt.Println(currentLine + " [" + strconv.Itoa(currentPos) + "]")
+				currentPos++
 				break
 			}
 		}
+	}
+
+	createPositionalMappingFile(positionalMappingToUUID)
+
+	// err = ioutil.WriteFile("log-metadata.bl", []byte(output), 0644)
+}
+
+func createPositionalMappingFile(positionalMappingToUUID map[string]string) {
+
+	metadataFile, err := os.Create("log-mapping.bl")
+	defer metadataFile.Close()
+	if err != nil {
+		panic(err)
+	}
+	encoder := gob.NewEncoder(metadataFile)
+	encodeError := encoder.Encode(positionalMappingToUUID)
+	if encodeError != nil {
+		panic(err)
 	}
 }
