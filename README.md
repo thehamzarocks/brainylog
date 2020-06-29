@@ -44,7 +44,7 @@ Also, given a line, you can get 5 lines above and below it, including the line i
 >$ brainyLog g n 3 (using the line's temporary positional number - be careful, we haven't specified nm here, so it would display the metadata for these lines also). 
 
 You can also process tasks, moving them to a different state:
->$ brainyLog t complete n 5
+>$ brainyLog t t complete n 5
 
 
 ## Local Setup
