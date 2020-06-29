@@ -18,10 +18,18 @@ func processBrainyLogRead(commandMap map[string]string) {
 	getBrainyLogMatches(searchType, searchText)
 }
 
+func getLineContent(line string) string {
+	contentStartIndex := strings.Index(line, ">") + 1
+	return line[contentStartIndex:]
+}
+
 func lineMatches(line string, searchType string, searchText string) (lineMatches bool) {
-	if !strings.Contains(strings.ToLower(line), strings.ToLower(searchText)) {
+	lineContent := getLineContent(line)
+	if !strings.Contains(strings.ToLower(lineContent), strings.ToLower(searchText)) {
 		return false
 	}
+	// fmt.Println(strings.ToLower(line))
+	// fmt.Println(strings.ToLower(searchText))
 	switch searchType {
 	case "all":
 		lineMatches = true
