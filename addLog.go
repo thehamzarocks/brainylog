@@ -10,51 +10,29 @@ import (
 	"github.com/google/uuid"
 )
 
-func processBrainyLogWrite(args []string) {
-	logType, log := processAddArgs(args)
-	if logType == "multiline" {
+func processBrainyLogWrite(commandMap map[string]string) {
+	log, containsLog := commandMap["l"]
+	if !containsLog {
+		fmt.Println("Please pass in a message to be logged!")
 		return
 	}
-	if logType == "noTaskLog || noInfoLog" {
-		fmt.Println("Invalid usage. Pass in a message to be logged")
-		return
-	}
-	if logType == "info" {
-		addInfoLog(logType, log)
-	}
-	if logType == "task" {
-		addTaskLog(logType, log)
-	}
-}
-
-func processAddArgs(args []string) (string, string) {
-	if len(args) < 2 {
-		return "noInfoLog", ""
-	}
-
-	if args[1] == "-t" {
-		if len(args) < 3 {
-			return "noTaskLog", ""
-		}
-		log := strings.Join(args[2:], " ")
-		if strings.Index(log, "\n") != -1 {
-			fmt.Println("Only single-line logs are permitted!")
-			return "multiline", ""
-		}
-		return "task", log
-	}
-
-	log := strings.Join(args[1:], " ")
 	if strings.Index(log, "\n") != -1 {
 		fmt.Println("Only single-line logs are permitted!")
-		return "multiline", ""
+		return
 	}
-	return "info", log
+
+	_, isTask := commandMap["t"]
+	if isTask {
+		addTaskLog(log)
+		return
+	}
+	addInfoLog(log)
+	return
 }
 
-func addInfoLog(logType string, log string) {
+func addInfoLog(log string) {
 	filename := defaultFilePath
-	line := processLine(logType, log, "info")
+	line := processLine("info", log)
 	fmt.Println(filename, line)
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
@@ -67,9 +45,9 @@ func addInfoLog(logType string, log string) {
 	}
 }
 
-func addTaskLog(logType string, log string) {
+func addTaskLog(log string) {
 	filename := defaultFilePath
-	line := processLine(logType, log, "task")
+	line := processLine("task", log)
 	fmt.Println(filename, line)
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
@@ -82,7 +60,7 @@ func addTaskLog(logType string, log string) {
 	}
 }
 
-func processLine(logtype string, log string, logType string) string {
+func processLine(logType string, log string) string {
 	t := time.Now()
 	timestamp := t.Format(time.RFC3339)
 	epoch := t.UnixNano() / 1e6

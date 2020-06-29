@@ -23,9 +23,13 @@ func main() {
 			fmt.Println("Add epects at least one parameter!")
 			return
 		}
-		processBrainyLogWrite(args)
+		processCommand("a", args[1:])
 	case "g":
-		processGetCommand(args[1:])
+		if len(args) < 2 {
+			fmt.Println("Get epects at least one parameter!")
+			return
+		}
+		processCommand("g", args[1:])
 	case "t":
 		processTask(args)
 	}
@@ -33,6 +37,8 @@ func main() {
 
 func isFlag(command string, token string) bool {
 	switch command {
+	case "a":
+		return token == "t"
 	case "g":
 		return token == "nm"
 	}
@@ -43,26 +49,36 @@ func isSingleValuedKey(command string, token string) bool {
 	switch command {
 	case "g":
 		return token == "t"
+	case "a":
+		return false
 	}
 	panic("Invalid command!")
 }
 
 func isMultiValuedKey(command string, token string) bool {
 	switch command {
+	case "a":
+		return token == "l"
 	case "g":
 		return token == "l"
 	}
-	panic("Invalid command!")
+	panic("Invalid command " + command + "!")
 }
 
 func isValidValueForKey(command string, key string, value string) bool {
-	if key == "t" {
-		return key != "create" && key != "progress" && key != "suspend" && key != "cancel" && key != "complete"
+	switch command {
+	case "a":
+		return true
+	case "g":
+		if key == "t" {
+			return key != "create" && key != "progress" && key != "suspend" && key != "cancel" && key != "complete"
+		}
+		return true
 	}
-	return true
+	panic("Invalid command " + command + "!")
 }
 
-func processGetCommand(args []string) {
+func processCommand(command string, args []string) {
 	commandMap := make(map[string]string)
 	remainingArgs := args
 	tokenTypeToLookFor := "key/flag"
@@ -76,16 +92,16 @@ func processGetCommand(args []string) {
 			} else {
 				remainingArgs = remainingArgs[1:]
 			}
-			if isFlag("g", currentKeyOrFlag) {
+			if isFlag(command, currentKeyOrFlag) {
 				commandMap[currentKeyOrFlag] = ""
 				tokenTypeToLookFor = "key/flag"
 				continue
 			}
-			if isSingleValuedKey("g", currentKeyOrFlag) {
+			if isSingleValuedKey(command, currentKeyOrFlag) {
 				tokenTypeToLookFor = "singleValue"
 				continue
 			}
-			if isMultiValuedKey("g", currentKeyOrFlag) {
+			if isMultiValuedKey(command, currentKeyOrFlag) {
 				tokenTypeToLookFor = "multiValue"
 				continue
 			}
@@ -100,7 +116,7 @@ func processGetCommand(args []string) {
 			} else {
 				remainingArgs = remainingArgs[1:]
 			}
-			if !isValidValueForKey("g", currentKeyOrFlag, currentValue) {
+			if !isValidValueForKey(command, currentKeyOrFlag, currentValue) {
 				fmt.Println("Invalid value " + currentValue + " for key " + currentKeyOrFlag + "!")
 				return
 			}
@@ -120,5 +136,16 @@ func processGetCommand(args []string) {
 		return
 	}
 
-	processBrainyLogRead(commandMap)
+	executeCommand(command, commandMap)
+}
+
+func executeCommand(command string, commandMap map[string]string) {
+	switch command {
+	case "a":
+		processBrainyLogWrite(commandMap)
+	case "g":
+		processBrainyLogRead(commandMap)
+	default:
+		panic("Unknown command " + command + "!")
+	}
 }

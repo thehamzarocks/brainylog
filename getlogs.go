@@ -2,32 +2,10 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 )
-
-func processGetArgs(args []string) (searchType string, searchText string, err error) {
-	if len(args) < 2 {
-		// TODO: need to support get all?
-		return "none", "", errors.New("Please provide a search text for get")
-	}
-	if args[1] == "-t" {
-		if len(args) < 3 {
-			return "allTasks", "", nil
-		}
-		searchType = args[2]
-		if len(args) > 3 {
-			searchText = strings.Join(args[3:], " ")
-			return searchType, searchText, nil
-		}
-		return searchType, "", nil
-	}
-
-	searchText = strings.Join(args[1:], " ")
-	return "all", searchText, nil
-}
 
 func processBrainyLogRead(commandMap map[string]string) {
 	searchText := commandMap["l"]
