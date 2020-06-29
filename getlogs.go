@@ -15,7 +15,9 @@ func processBrainyLogRead(commandMap map[string]string) {
 	if !isTask {
 		searchType = "all"
 	}
-	getBrainyLogMatches(searchType, searchText)
+
+	_, showMetadata := commandMap["nm"]
+	getBrainyLogMatches(searchType, searchText, showMetadata)
 }
 
 func getLineContent(line string) string {
@@ -87,7 +89,7 @@ func getMetadataValue(line string, key string) string {
 	return string(line[metadataStartIndex+3])
 }
 
-func getBrainyLogMatches(searchType string, searchText string) {
+func getBrainyLogMatches(searchType string, searchText string, showMetadata bool) {
 	fmt.Println("Getting matches for searchtext: ", searchText)
 	file, err := os.Open(defaultFilePath)
 	if err != nil {
@@ -108,7 +110,11 @@ func getBrainyLogMatches(searchType string, searchText string) {
 		for _, keyword := range keywords {
 			if lineMatches(currentLine, searchType, keyword) {
 				positionalMappingToUUID[strconv.Itoa(currentPos)] = getUUID(currentLine)
-				fmt.Println(currentLine + " [" + strconv.Itoa(currentPos) + "]")
+				if showMetadata {
+					fmt.Println(getLineContent(currentLine))
+				} else {
+					fmt.Println(currentLine + " [" + strconv.Itoa(currentPos) + "]")
+				}
 				currentPos++
 				break
 			}
