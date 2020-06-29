@@ -31,6 +31,37 @@ func main() {
 	}
 }
 
+func isFlag(command string, token string) bool {
+	switch command {
+	case "g":
+		return token == "nm"
+	}
+	panic("Invalid command!")
+}
+
+func isSingleValuedKey(command string, token string) bool {
+	switch command {
+	case "g":
+		return token == "t"
+	}
+	panic("Invalid command!")
+}
+
+func isMultiValuedKey(command string, token string) bool {
+	switch command {
+	case "g":
+		return token == "l"
+	}
+	panic("Invalid command!")
+}
+
+func isValidValueForKey(command string, key string, value string) bool {
+	if key == "t" {
+		return key != "create" && key != "progress" && key != "suspend" && key != "cancel" && key != "complete"
+	}
+	return true
+}
+
 func processGetCommand(args []string) {
 	commandMap := make(map[string]string)
 	remainingArgs := args
@@ -45,16 +76,16 @@ func processGetCommand(args []string) {
 			} else {
 				remainingArgs = remainingArgs[1:]
 			}
-			if currentKeyOrFlag == "nm" {
-				commandMap["nm"] = ""
+			if isFlag("g", currentKeyOrFlag) {
+				commandMap[currentKeyOrFlag] = ""
 				tokenTypeToLookFor = "key/flag"
 				continue
 			}
-			if currentKeyOrFlag == "t" {
+			if isSingleValuedKey("g", currentKeyOrFlag) {
 				tokenTypeToLookFor = "singleValue"
 				continue
 			}
-			if currentKeyOrFlag == "l" {
+			if isMultiValuedKey("g", currentKeyOrFlag) {
 				tokenTypeToLookFor = "multiValue"
 				continue
 			}
@@ -69,11 +100,9 @@ func processGetCommand(args []string) {
 			} else {
 				remainingArgs = remainingArgs[1:]
 			}
-			if currentKeyOrFlag == "t" {
-				if currentValue != "create" && currentValue != "progress" && currentValue != "suspend" && currentValue != "cancel" && currentValue != "complete" {
-					fmt.Println("Invalid value " + currentValue + " for key t!")
-					return
-				}
+			if !isValidValueForKey("g", currentKeyOrFlag, currentValue) {
+				fmt.Println("Invalid value " + currentValue + " for key " + currentKeyOrFlag + "!")
+				return
 			}
 			commandMap[currentKeyOrFlag] = currentValue
 			tokenTypeToLookFor = "key/flag"
