@@ -6,28 +6,24 @@ import (
 	"strings"
 )
 
-func processTask(args []string) {
-	taskUUID, toState := processTaskArgs(args)
-	if toState == "error" {
-		fmt.Println("Invalid task parameters!")
+func processTask(commandMap map[string]string) {
+	taskUUID, containsTaskUUID := commandMap["u"]
+	// temporaryPositionalNumber, containstemporaryPositionalNumber := commandMap["n"]
+
+	if !containsTaskUUID {
+		fmt.Println("Task processing needs a task UUID!")
 		return
 	}
-	changeTaskState(taskUUID, toState)
-}
 
-func processTaskArgs(args []string) (string, string) {
-	if len(args) < 3 {
-		return "", "error"
+	toState, containsToState := commandMap["t"]
+	if !containsToState {
+		fmt.Println("Task processing needs a task to-state!")
+		return
 	}
-
-	taskUUID := args[1]
-	toState := args[2]
-
 	if toState != "create" && toState != "progress" && toState != "suspend" && toState != "cancel" && toState != "complete" {
-		return taskUUID, "error"
+		fmt.Println("Invalid value " + toState + " for task toState!")
 	}
-
-	return taskUUID, toState
+	changeTaskState(taskUUID, toState)
 }
 
 func changeTaskState(taskUUID string, toState string) {
