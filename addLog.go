@@ -12,6 +12,9 @@ import (
 
 func processBrainyLogWrite(args []string) {
 	logType, log := processAddArgs(args)
+	if logType == "multiline" {
+		return
+	}
 	if logType == "noTaskLog || noInfoLog" {
 		fmt.Println("Invalid usage. Pass in a message to be logged")
 		return
@@ -34,10 +37,18 @@ func processAddArgs(args []string) (string, string) {
 			return "noTaskLog", ""
 		}
 		log := strings.Join(args[2:], " ")
+		if strings.Index(log, "\n") != -1 {
+			fmt.Println("Only single-line logs are permitted!")
+			return "multiline", ""
+		}
 		return "task", log
 	}
 
 	log := strings.Join(args[1:], " ")
+	if strings.Index(log, "\n") != -1 {
+		fmt.Println("Only single-line logs are permitted!")
+		return "multiline", ""
+	}
 	return "info", log
 }
 
