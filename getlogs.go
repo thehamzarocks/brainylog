@@ -108,6 +108,9 @@ func getUUIDMatches(lineUUID string, hideMetadata bool, linesToShow string) {
 				pos := 0
 
 				for _, subline := range lines[startIndex : endIndex+1] {
+					if getMetadataValue(subline, "S", 2) == "01" {
+						continue
+					}
 					positionalMappingToUUID[strconv.Itoa(pos)] = getUUID(subline)
 					displayLine(subline, hideMetadata, strconv.Itoa(pos))
 					pos++
