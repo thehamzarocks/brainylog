@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/gob"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -31,16 +32,19 @@ func processTask(commandMap map[string]string) {
 		return
 	}
 	if containstemporaryPositionalNumber {
-		matchingUUID := getUUIDFromTemporaryPositionalNumber(temporaryPositionalNumber)
+		matchingUUID, err := getUUIDFromTemporaryPositionalNumber(temporaryPositionalNumber)
+		if err != nil {
+			fmt.Println(err)
+		}
 		changeTaskState(matchingUUID, toState)
 		return
 	}
 }
 
-func getUUIDFromTemporaryPositionalNumber(temporaryPositionalNumber string) string {
+func getUUIDFromTemporaryPositionalNumber(temporaryPositionalNumber string) (string, error) {
 	decodeFile, err := os.Open("log-mapping.bl")
 	if err != nil {
-		panic(err)
+		return "", errors.New("Unable to find mappings file")
 	}
 	defer decodeFile.Close()
 
@@ -50,9 +54,9 @@ func getUUIDFromTemporaryPositionalNumber(temporaryPositionalNumber string) stri
 
 	uuid, containsUUID := positionalMappings[temporaryPositionalNumber]
 	if !containsUUID {
-		panic("Unable to find line matching positional number " + temporaryPositionalNumber + "!")
+		return "", errors.New("Unable to find line matching positional number " + temporaryPositionalNumber + "!")
 	}
-	return uuid
+	return uuid, nil
 }
 
 func changeTaskState(taskUUID string, toState string) {
@@ -87,6 +91,11 @@ func changeTaskState(taskUUID string, toState string) {
 }
 
 func getUUID(line string) string {
+	if len(line) == 0 {
+		fmt.Println("Invalid line " + line)
+		return ""
+	}
+
 	// Not a metadata line, ignore
 	if string(line[0]) != "(" {
 		return ""
@@ -94,6 +103,7 @@ func getUUID(line string) string {
 	uuidEndIndex := strings.Index(line, ">")
 	// this case should not happen
 	if uuidEndIndex == -1 {
+		fmt.Println("wow no")
 		return ""
 	}
 	uuidStartIndex := strings.LastIndex(line[:uuidEndIndex], ")") + 1

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -56,7 +57,7 @@ func isSingleValuedKey(command string, token string) bool {
 	case "a":
 		return false
 	case "g":
-		return token == "t"
+		return token == "t" || token == "n" || token == "u" || token == "m"
 	case "t":
 		return token == "t" || token == "n" || token == "u"
 	}
@@ -83,6 +84,12 @@ func isValidValueForKey(command string, key string, value string) bool {
 		if key == "t" {
 			return !(value != "create" && value != "progress" && value != "suspend" && value != "cancel" && value != "complete")
 		}
+		if key == "m" {
+			if _, numberParseError := strconv.Atoi(value); numberParseError != nil {
+				return false
+			}
+			return true
+		}
 		return true
 	case "t":
 		if key == "t" {
@@ -102,6 +109,10 @@ func processCommand(command string, args []string) {
 	for hasRemaining {
 		if tokenTypeToLookFor == "key/flag" {
 			currentKeyOrFlag = remainingArgs[0]
+			if _, containsKeyOrFlag := commandMap[currentKeyOrFlag]; containsKeyOrFlag {
+				fmt.Println("Repeated key/flag " + currentKeyOrFlag + "!")
+				return
+			}
 			if len(remainingArgs) == 1 {
 				hasRemaining = false
 			} else {
@@ -146,7 +157,7 @@ func processCommand(command string, args []string) {
 		}
 	}
 
-	if tokenTypeToLookFor == "singleValue" || tokenTypeToLookFor == "multiValue" {
+	if tokenTypeToLookFor == "singleValue" {
 		fmt.Println("Expected value for key " + currentKeyOrFlag + "!")
 		return
 	}
