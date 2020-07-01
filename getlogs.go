@@ -122,11 +122,20 @@ func getUUIDMatches(lineUUID string, hideMetadata bool, linesToShow string) {
 
 func displayLine(line string, hideMetadata bool, positionalNumber string) {
 	if hideMetadata {
+		if getMetadataValue(line, "S", 2) == "01" {
+			fmt.Println("This line has been deleted: " + line)
+			return
+		}
 		fmt.Println(getLineContent(line))
 		return
 	}
 	if positionalNumber != "" {
 		fmt.Println(line + " [" + positionalNumber + "]")
+		return
+	}
+
+	if getMetadataValue(line, "S", 2) == "01" {
+		fmt.Println("This line has been deleted: " + line)
 		return
 	}
 	fmt.Println(line)
@@ -150,15 +159,15 @@ func lineMatches(line string, searchType string, searchText string) (lineMatches
 	case "allTasks":
 		lineMatches = containsMetadata(line, "T")
 	case "create":
-		lineMatches = getMetadataValue(line, "T") == "0"
+		lineMatches = getMetadataValue(line, "T", 1) == "0"
 	case "progress":
-		lineMatches = getMetadataValue(line, "T") == "1"
+		lineMatches = getMetadataValue(line, "T", 1) == "1"
 	case "suspend":
-		lineMatches = getMetadataValue(line, "T") == "2"
+		lineMatches = getMetadataValue(line, "T", 1) == "2"
 	case "cancel":
-		lineMatches = getMetadataValue(line, "T") == "3"
+		lineMatches = getMetadataValue(line, "T", 1) == "3"
 	case "complete":
-		lineMatches = getMetadataValue(line, "T") == "4"
+		lineMatches = getMetadataValue(line, "T", 1) == "4"
 	default:
 		fmt.Println("Invalid task type!")
 		lineMatches = false
@@ -183,8 +192,11 @@ func containsMetadata(line string, key string) bool {
 	return metadataStartIndex != -1
 }
 
-func getMetadataValue(line string, key string) string {
+func getMetadataValue(line string, key string, valueLength int) string {
 	// Not a metadata line, ignore
+	if len(line) == 0 {
+		return ""
+	}
 	if string(line[0]) != "(" {
 		return ""
 	}
@@ -198,7 +210,7 @@ func getMetadataValue(line string, key string) string {
 	if metadataStartIndex == -1 {
 		return ""
 	}
-	return string(line[metadataStartIndex+3])
+	return string(line[metadataStartIndex+2+len(key) : metadataStartIndex+2+len(key)+valueLength])
 }
 
 func getBrainyLogMatches(searchType string, searchText string, hideMetadata bool) {
@@ -218,6 +230,9 @@ func getBrainyLogMatches(searchType string, searchText string, hideMetadata bool
 
 	for scanner.Scan() {
 		currentLine := scanner.Text()
+		if getMetadataValue(currentLine, "S", 2) == "01" {
+			continue
+		}
 
 		for _, keyword := range keywords {
 			if lineMatches(currentLine, searchType, keyword) {

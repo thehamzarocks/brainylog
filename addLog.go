@@ -74,6 +74,8 @@ func processLine(logType string, log string) string {
 	str.WriteString(".0")
 	str.WriteString("]")
 
+	str.WriteString("(S-00)")
+
 	if logType == "task" {
 		str.WriteString("(T-0)")
 	}

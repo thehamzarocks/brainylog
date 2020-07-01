@@ -71,6 +71,10 @@ func changeTaskState(taskUUID string, toState string) {
 
 	for i, line := range lines {
 		if getUUID(line) == taskUUID {
+			if getMetadataValue(line, "S", 2) == "01" {
+				fmt.Println("Line has been deleted: " + line)
+				return
+			}
 			changedLine := changeTaskStateAtLine(line, toState)
 			if changedLine == "" {
 				panic("Error occured while changing task state!")
@@ -139,6 +143,6 @@ func setMetadataValue(line string, key string, value string) string {
 		return ""
 	}
 	uuidStartIndex := strings.LastIndex(line[:uuidEndIndex], ")") + 1
-	metadataStartIndex := strings.Index(line[:uuidStartIndex], "(T-")
-	return line[:metadataStartIndex+3] + value + line[metadataStartIndex+4:]
+	metadataStartIndex := strings.Index(line[:uuidStartIndex], "("+key+"-")
+	return line[:metadataStartIndex+len(key)+2] + value + line[metadataStartIndex+2+len(key)+len(value):]
 }

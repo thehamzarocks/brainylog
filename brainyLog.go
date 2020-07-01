@@ -37,6 +37,12 @@ func main() {
 			return
 		}
 		processCommand("t", args[1:])
+	case "d":
+		if len(args) < 2 {
+			fmt.Println("Get expects at least one parameter!")
+			return
+		}
+		processCommand("d", args[1:])
 	}
 }
 
@@ -47,6 +53,8 @@ func isFlag(command string, token string) bool {
 	case "g":
 		return token == "nm"
 	case "t":
+		return false
+	case "d":
 		return false
 	}
 	panic("Invalid command!")
@@ -60,6 +68,8 @@ func isSingleValuedKey(command string, token string) bool {
 		return token == "t" || token == "n" || token == "u" || token == "m"
 	case "t":
 		return token == "t" || token == "n" || token == "u"
+	case "d":
+		return token == "n" || token == "u"
 	}
 	panic("Invalid command!")
 }
@@ -71,6 +81,8 @@ func isMultiValuedKey(command string, token string) bool {
 	case "g":
 		return token == "l"
 	case "t":
+		return false
+	case "d":
 		return false
 	}
 	panic("Invalid command " + command + "!")
@@ -95,6 +107,8 @@ func isValidValueForKey(command string, key string, value string) bool {
 		if key == "t" {
 			return !(value != "create" && value != "progress" && value != "suspend" && value != "cancel" && value != "complete")
 		}
+		return true
+	case "d":
 		return true
 	}
 	panic("Invalid command " + command + "!")
@@ -173,6 +187,8 @@ func executeCommand(command string, commandMap map[string]string) {
 		processBrainyLogRead(commandMap)
 	case "t":
 		processTask(commandMap)
+	case "d":
+		processDeleteLog(commandMap)
 	default:
 		panic("Unknown command " + command + "!")
 	}
