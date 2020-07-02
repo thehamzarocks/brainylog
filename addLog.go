@@ -33,7 +33,6 @@ func processBrainyLogWrite(commandMap map[string]string) {
 func addInfoLog(log string) {
 	filename := defaultFilePath
 	line := processLine("info", log)
-	fmt.Println("Writing info:\n" + line)
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
@@ -43,12 +42,12 @@ func addInfoLog(log string) {
 	if _, err = f.WriteString(line + "\n"); err != nil {
 		panic(err)
 	}
+	fmt.Println("Info logged:\n\n" + line + "\n")
 }
 
 func addTaskLog(log string) {
 	filename := defaultFilePath
 	line := processLine("task", log)
-	fmt.Println("Writing task:\n" + line)
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
@@ -58,6 +57,7 @@ func addTaskLog(log string) {
 	if _, err = f.WriteString(line + "\n"); err != nil {
 		panic(err)
 	}
+	fmt.Println("Task Logged:\n\n" + line + "\n")
 }
 
 func processLine(logType string, log string) string {

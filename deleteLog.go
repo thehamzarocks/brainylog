@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"strings"
 )
 
 func processDeleteLog(commandMap map[string]string) {
@@ -21,8 +19,11 @@ func processDeleteLog(commandMap map[string]string) {
 		return
 	}
 
+	argsMap := make(map[string]string)
+
 	if containsUUID {
-		deleteLine(uuidMatcher)
+		argsMap["uuid"] = uuidMatcher
+		processFile(deleteLine, argsMap)
 		return
 	}
 	if containsPosition {
@@ -30,41 +31,27 @@ func processDeleteLog(commandMap map[string]string) {
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		deleteLine(lineUUID)
+		argsMap["uuid"] = lineUUID
+		processFile(deleteLine, argsMap)
 		return
 	}
 }
 
-func deleteLine(uuid string) {
-	filename := defaultFilePath
-	// fmt.Println(filename, line)
-	input, err := ioutil.ReadFile(filename)
-	if err != nil {
-		panic(err)
-	}
+func deleteLine(lines []string, argsMap map[string]string) (writeBack bool) {
 
-	lines := strings.Split(string(input), "\n")
-	if len(lines) == 0 {
-		fmt.Println("Empty file!")
-		return
-	}
-	lines = lines[:len(lines)-1]
+	uuid := argsMap["uuid"]
 
 	for i, line := range lines {
 		if getUUID(line) == uuid {
 			changedLine := setMetadataValue(line, "S", "01")
 			lines[i] = changedLine
 			fmt.Println("Line deleted:")
+			fmt.Println("")
 			fmt.Println(changedLine)
+			fmt.Println("")
 			break
 		}
 	}
 
-	output := strings.Join(lines, "\n")
-	output += "\n"
-	err = ioutil.WriteFile(defaultFilePath, []byte(output), 0644)
-
-	if err != nil {
-		fmt.Println("Something went wrong while deleting line")
-	}
+	return true
 }

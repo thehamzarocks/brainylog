@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"encoding/gob"
 	"fmt"
 	"io/ioutil"
@@ -9,6 +8,78 @@ import (
 	"strconv"
 	"strings"
 )
+
+type lineProcessorFn func(lines []string, argsMap map[string]string) (writeBack bool)
+
+func processFile(processLines lineProcessorFn, argsMap map[string]string) {
+
+	filename := defaultFilePath
+	input, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	// this would contain an empty string after the last "\n", so subtracting 1
+	lines := strings.Split(string(input), "\n")
+	if len(lines) == 0 {
+		fmt.Println("Empty file!")
+		return
+	}
+	lines = lines[:len(lines)-1]
+
+	writeBack := processLines(lines, argsMap)
+
+	if writeBack {
+		output := strings.Join(lines, "\n")
+		output += "\n"
+		err = ioutil.WriteFile(defaultFilePath, []byte(output), 0644)
+
+		if err != nil {
+			fmt.Println("Something went wrong while writing to file!")
+		}
+	}
+}
+
+func isDeleted(line string) bool {
+	return getMetadataValue(line, "S", 2) == "01"
+}
+
+func getSearchTextMatches(lines []string, argsMap map[string]string) (writeBack bool) {
+	searchText := argsMap["searchText"]
+	searchType := argsMap["searchType"]
+	hideMetadata := argsMap["hideMetadata"]
+
+	positionalMappingToUUID := make(map[string]string)
+	currentPos := 0
+
+	fmt.Println("Getting matches for searchtext: ", searchText+"\n")
+
+	for _, line := range lines {
+		if isDeleted(line) {
+			continue
+		}
+
+		keywords := strings.Split(searchText, " ")
+
+		for _, keyword := range keywords {
+			if lineMatches(line, searchType, keyword) {
+				positionalMappingToUUID[strconv.Itoa(currentPos)] = getUUID(line)
+				if hideMetadata == "hideMetadata" {
+					fmt.Println(getLineContent(line))
+				} else {
+					fmt.Println(getLineContent(line) + " [" + strconv.Itoa(currentPos) + "]")
+				}
+				currentPos++
+				break
+			}
+		}
+	}
+
+	fmt.Println("")
+	createPositionalMappingFile(positionalMappingToUUID)
+
+	return false
+}
 
 func processBrainyLogRead(commandMap map[string]string) {
 	searchText, containsSearchText := commandMap["l"]
@@ -38,12 +109,28 @@ func processBrainyLogRead(commandMap map[string]string) {
 	}
 
 	_, hideMetadata := commandMap["nm"]
+
+	var argsMap map[string]string = make(map[string]string)
+
+	if hideMetadata {
+		argsMap["hideMetadata"] = "hideMetadata"
+	} else {
+		argsMap["hideMetadata"] = "showMetadata"
+	}
+
 	if containsSearchText {
-		getBrainyLogMatches(searchType, searchText, hideMetadata)
+		argsMap["searchText"] = searchText
+		argsMap["searchType"] = searchType
+		processFile(getSearchTextMatches, argsMap)
+		// getBrainyLogMatches(searchType, searchText, hideMetadata)
 		return
 	}
 	if containsLineUUID {
-		getUUIDMatches(lineUUID, hideMetadata, linesToShow)
+		argsMap["uuid"] = lineUUID
+		argsMap["linesToShow"] = linesToShow
+		processFile(getUUIDMatches, argsMap)
+
+		// getUUIDMatches(lineUUID, hideMetadata, linesToShow)
 		return
 	}
 	if containsLineNumber {
@@ -52,13 +139,19 @@ func processBrainyLogRead(commandMap map[string]string) {
 			fmt.Println(err)
 			return
 		}
-		getUUIDMatches(lineUUID, hideMetadata, linesToShow)
+		argsMap["uuid"] = lineUUID
+		argsMap["linesToShow"] = linesToShow
+		processFile(getUUIDMatches, argsMap)
 		return
 	}
 
 }
 
-func getUUIDMatches(lineUUID string, hideMetadata bool, linesToShow string) {
+func getUUIDMatches(lines []string, argsMap map[string]string) (writeBack bool) {
+	lineUUID := argsMap["uuid"]
+	linesToShow := argsMap["linesToShow"]
+	hideMetadata := argsMap["hideMetadata"]
+
 	var lineCount int
 	if linesToShow == "" {
 		lineCount = 0
@@ -71,19 +164,7 @@ func getUUIDMatches(lineUUID string, hideMetadata bool, linesToShow string) {
 		}
 	}
 
-	filename := defaultFilePath
-	input, err := ioutil.ReadFile(filename)
-	if err != nil {
-		panic(err)
-	}
-
-	// this would contain an empty string after the last "\n", so subtracting 1
-	lines := strings.Split(string(input), "\n")
-	if len(lines) == 0 {
-		fmt.Println("Empty file!")
-		return
-	}
-	lines = lines[:len(lines)-1]
+	fmt.Println("Getting matches: " + "\n")
 
 	for index, line := range lines {
 		if getUUID(line) == lineUUID {
@@ -108,7 +189,7 @@ func getUUIDMatches(lineUUID string, hideMetadata bool, linesToShow string) {
 				pos := 0
 
 				for _, subline := range lines[startIndex : endIndex+1] {
-					if getMetadataValue(subline, "S", 2) == "01" {
+					if isDeleted(subline) {
 						continue
 					}
 					positionalMappingToUUID[strconv.Itoa(pos)] = getUUID(subline)
@@ -117,14 +198,15 @@ func getUUIDMatches(lineUUID string, hideMetadata bool, linesToShow string) {
 				}
 				createPositionalMappingFile(positionalMappingToUUID)
 			}
-
 			break
 		}
 	}
+	fmt.Println("")
+	return false
 }
 
-func displayLine(line string, hideMetadata bool, positionalNumber string) {
-	if hideMetadata {
+func displayLine(line string, hideMetadata string, positionalNumber string) {
+	if hideMetadata == "hideMetadata" {
 		if getMetadataValue(line, "S", 2) == "01" {
 			fmt.Println("This line has been deleted: " + line)
 			return
@@ -215,46 +297,6 @@ func getMetadataValue(line string, key string, valueLength int) string {
 		return ""
 	}
 	return string(line[metadataStartIndex+2+len(key) : metadataStartIndex+2+len(key)+valueLength])
-}
-
-func getBrainyLogMatches(searchType string, searchText string, hideMetadata bool) {
-	fmt.Println("Getting matches for searchtext: ", searchText)
-	file, err := os.Open(defaultFilePath)
-	if err != nil {
-		fmt.Println("Error opening file for get!")
-	}
-	defer file.Close()
-
-	keywords := strings.Split(searchText, " ")
-
-	scanner := bufio.NewScanner(file)
-
-	positionalMappingToUUID := make(map[string]string)
-	currentPos := 0
-
-	for scanner.Scan() {
-		currentLine := scanner.Text()
-		if getMetadataValue(currentLine, "S", 2) == "01" {
-			continue
-		}
-
-		for _, keyword := range keywords {
-			if lineMatches(currentLine, searchType, keyword) {
-				positionalMappingToUUID[strconv.Itoa(currentPos)] = getUUID(currentLine)
-				if hideMetadata {
-					fmt.Println(getLineContent(currentLine))
-				} else {
-					fmt.Println(getLineContent(currentLine) + " [" + strconv.Itoa(currentPos) + "]")
-				}
-				currentPos++
-				break
-			}
-		}
-	}
-
-	createPositionalMappingFile(positionalMappingToUUID)
-
-	// err = ioutil.WriteFile("log-metadata.bl", []byte(output), 0644)
 }
 
 func createPositionalMappingFile(positionalMappingToUUID map[string]string) {

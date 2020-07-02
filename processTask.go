@@ -11,9 +11,9 @@ import (
 
 func processTask(commandMap map[string]string) {
 	taskUUID, containsTaskUUID := commandMap["u"]
-	temporaryPositionalNumber, containstemporaryPositionalNumber := commandMap["n"]
+	temporaryPositionalNumber, containsTemporaryPositionalNumber := commandMap["n"]
 
-	if !containsTaskUUID && !containstemporaryPositionalNumber {
+	if !containsTaskUUID && !containsTemporaryPositionalNumber {
 		fmt.Println("Task processing needs a task UUID or temporary positional number!")
 		return
 	}
@@ -27,16 +27,22 @@ func processTask(commandMap map[string]string) {
 		fmt.Println("Invalid value " + toState + " for task toState!")
 	}
 
+	argsMap := make(map[string]string)
+
+	argsMap["toState"] = toState
+
 	if containsTaskUUID {
-		changeTaskState(taskUUID, toState)
+		argsMap["taskUUID"] = taskUUID
+		processFile(changeTaskState, argsMap)
 		return
 	}
-	if containstemporaryPositionalNumber {
+	if containsTemporaryPositionalNumber {
 		matchingUUID, err := getUUIDFromTemporaryPositionalNumber(temporaryPositionalNumber)
 		if err != nil {
 			fmt.Println(err)
 		}
-		changeTaskState(matchingUUID, toState)
+		argsMap["taskUUID"] = matchingUUID
+		processFile(changeTaskState, argsMap)
 		return
 	}
 }
@@ -59,19 +65,13 @@ func getUUIDFromTemporaryPositionalNumber(temporaryPositionalNumber string) (str
 	return uuid, nil
 }
 
-func changeTaskState(taskUUID string, toState string) {
-	filename := defaultFilePath
-	// fmt.Println(filename, line)
-	input, err := ioutil.ReadFile(filename)
-	if err != nil {
-		panic(err)
-	}
-
-	lines := strings.Split(string(input), "\n")
+func changeTaskState(lines []string, argsMap map[string]string) (writeBack bool) {
+	taskUUID := argsMap["taskUUID"]
+	toState := argsMap["toState"]
 
 	for i, line := range lines {
 		if getUUID(line) == taskUUID {
-			if getMetadataValue(line, "S", 2) == "01" {
+			if isDeleted(line) {
 				fmt.Println("Line has been deleted: " + line)
 				return
 			}
@@ -81,22 +81,25 @@ func changeTaskState(taskUUID string, toState string) {
 			}
 			lines[i] = changedLine
 			fmt.Println("Task state changed for line:")
+			fmt.Println("")
 			fmt.Println(changedLine)
+			fmt.Println("")
 			break
 		}
 	}
 
 	output := strings.Join(lines, "\n")
-	err = ioutil.WriteFile(defaultFilePath, []byte(output), 0644)
+	err := ioutil.WriteFile(defaultFilePath, []byte(output), 0644)
 
 	if err != nil {
 		fmt.Println("Something went wrong while editing task state!")
 	}
+
+	return true
 }
 
 func getUUID(line string) string {
 	if len(line) == 0 {
-		fmt.Println("Invalid line " + line)
 		return ""
 	}
 
