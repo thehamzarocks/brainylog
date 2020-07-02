@@ -132,8 +132,9 @@ func displayLine(line string, hideMetadata bool, positionalNumber string) {
 		fmt.Println(getLineContent(line))
 		return
 	}
+
 	if positionalNumber != "" {
-		fmt.Println(line + " [" + positionalNumber + "]")
+		fmt.Println(getLineContent(line) + " [" + positionalNumber + "]")
 		return
 	}
 
@@ -141,7 +142,7 @@ func displayLine(line string, hideMetadata bool, positionalNumber string) {
 		fmt.Println("This line has been deleted: " + line)
 		return
 	}
-	fmt.Println(line)
+	fmt.Println(getLineContent(line))
 	return
 }
 
@@ -243,7 +244,7 @@ func getBrainyLogMatches(searchType string, searchText string, hideMetadata bool
 				if hideMetadata {
 					fmt.Println(getLineContent(currentLine))
 				} else {
-					fmt.Println(currentLine + " [" + strconv.Itoa(currentPos) + "]")
+					fmt.Println(getLineContent(currentLine) + " [" + strconv.Itoa(currentPos) + "]")
 				}
 				currentPos++
 				break
