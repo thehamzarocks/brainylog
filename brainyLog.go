@@ -27,7 +27,8 @@ func main() {
 		processCommand("a", args[1:])
 	case "g":
 		if len(args) < 2 {
-			fmt.Println("Get epects at least one parameter!")
+			// no args to get, process directly
+			processBrainyLogRead(make(map[string]string))
 			return
 		}
 		processCommand("g", args[1:])
@@ -94,7 +95,7 @@ func isValidValueForKey(command string, key string, value string) bool {
 		return true
 	case "g":
 		if key == "t" {
-			return !(value != "create" && value != "progress" && value != "suspend" && value != "cancel" && value != "complete")
+			return !(value != "allTasks" && value != "create" && value != "progress" && value != "suspend" && value != "cancel" && value != "complete")
 		}
 		if key == "m" {
 			if _, numberParseError := strconv.Atoi(value); numberParseError != nil {

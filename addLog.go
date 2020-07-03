@@ -35,7 +35,9 @@ func addInfoLog(log string) {
 	line := processLine("info", log)
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		panic(err)
+		fmt.Println("Unable to write log! Check if log.bl exists in the current directory and it's not currently open!")
+		fmt.Println("If no log.bl exists in the current directory, you can create an empty one here, but it will start empty!")
+		return
 	}
 	defer f.Close()
 

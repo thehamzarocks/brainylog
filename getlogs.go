@@ -16,7 +16,8 @@ func processFile(processLines lineProcessorFn, argsMap map[string]string) {
 	filename := defaultFilePath
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
-		panic(err)
+		fmt.Println("Unable to find log! Check if log.bl exists in the current directory and it's not currently open!")
+		return
 	}
 
 	// this would contain an empty string after the last "\n", so subtracting 1
@@ -98,11 +99,6 @@ func processBrainyLogRead(commandMap map[string]string) {
 		matchers++
 	}
 
-	if matchers != 1 {
-		fmt.Println("Need exactly one of l, n, u to get!")
-		return
-	}
-
 	searchType, isTask := commandMap["t"]
 	if !isTask {
 		searchType = "all"
@@ -118,19 +114,22 @@ func processBrainyLogRead(commandMap map[string]string) {
 		argsMap["hideMetadata"] = "showMetadata"
 	}
 
+	if matchers == 0 {
+		argsMap["searchText"] = ""
+		argsMap["searchType"] = searchType
+		processFile(getSearchTextMatches, argsMap)
+	}
+
 	if containsSearchText {
 		argsMap["searchText"] = searchText
 		argsMap["searchType"] = searchType
 		processFile(getSearchTextMatches, argsMap)
-		// getBrainyLogMatches(searchType, searchText, hideMetadata)
 		return
 	}
 	if containsLineUUID {
 		argsMap["uuid"] = lineUUID
 		argsMap["linesToShow"] = linesToShow
 		processFile(getUUIDMatches, argsMap)
-
-		// getUUIDMatches(lineUUID, hideMetadata, linesToShow)
 		return
 	}
 	if containsLineNumber {
@@ -196,7 +195,11 @@ func getUUIDMatches(lines []string, argsMap map[string]string) (writeBack bool) 
 					displayLine(subline, hideMetadata, strconv.Itoa(pos))
 					pos++
 				}
-				createPositionalMappingFile(positionalMappingToUUID)
+
+				// create new positional mappings only if line metadata is displayed
+				if hideMetadata != "hideMetadata" {
+					createPositionalMappingFile(positionalMappingToUUID)
+				}
 			}
 			break
 		}
