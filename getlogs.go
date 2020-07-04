@@ -234,7 +234,7 @@ func displayLinesInRange(lines []string, index int, lineCount int, hideMetadata 
 		}
 		currentIndex++
 	}
-	endIndex = currentIndex
+	endIndex = currentIndex - 1
 
 	// if index-lineCount >= 0 {
 	// 	startIndex = index - lineCount
