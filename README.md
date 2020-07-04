@@ -13,6 +13,7 @@ Sounds too good to be true? It is right now. Because we're in version v 0.1. But
 You didn't master your mind in a few days. But you could get started the day you were born. **BrainyLog** works the same way, only faster.  
 
 BrainyLog commands run on the command line in your favorite Windows, Linux, or MacOS terminal:
+Before you can run any commands though, create an empty log.bl file in your current directory. **BrainyLog** will warn if this file does not exist in the current directory. This file is used to store all your logs, so be careful with it!
 
 Add information:
 > $ brainylog a l The small bananas are my favorite. 
