@@ -70,6 +70,10 @@ https://github.com/thehamzarocks/brainylog/blob/master/doc.md
 
 Want to fiddle around? Or give back? Get started with the source code on your own system:
 
+##### A quick go tutorial:
+https://howistart.org/posts/go/1/  
+
+
 ##### Clone the repo
 >$ git clone https://github.com/thehamzarocks/brainylog.git
 
