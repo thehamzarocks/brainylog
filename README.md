@@ -62,6 +62,8 @@ You can delete any logs entered by accident:
 >$ brainyLog d n 3
 
 Find the complete documentation here:  
+https://github.com/thehamzarocks/brainylog/blob/master/doc.md  
+
 
 ## Local Setup
 
