@@ -17,19 +17,22 @@ BrainyLog commands run on the command line in your favorite Windows, Linux, or M
 Add information:
 > $ brainylog a l The small bananas are my favorite. 
 
-The a command tells **brainyLog** to add some info. The l is an argument that tells **brainyLog** to add whatever comes after it to the logs.
+The a command tells **brainyLog** to log some info. The l is an argument that tells **brainyLog** to add whatever comes after it to the logs.
 
 Add tasks:
 >$ brainyLog a t l Bake a cake.  
-This works the same as the above command, except it adds a task "Bake a cake." The task is in the created state.
+This works the same as the above command, except it adds a task "Bake a cake." The task is in the created state by default.
 
 Retrieve information:
+
+>$ brainyLog g
+This simply retrieves all the logs that haven't been deleted.
+
 >$ brainylog g l bake cake.  
-> BrainyLog: 1 Result.   
-> [1] (2020-06-29T00:24:09+05:30)[1593370449183.0](T-0)541763e0-e38d-4e10-9522-0e5212ced4b7>Bake a cake.  
+> Bake a cake. [0]
 
 The g command tells **brainyLog** to retrieve all lines that match some of the keywords that come after l.
-The lines are retrieved along with their uuid and some other metadata.
+The lines are retrieved along with a number that can let you access the line directly using this number - more on this later.
 
 You can use the nm argument to tell **brainyLog** not to display any metadata:
 >$ brainyLog g nm l cake
@@ -38,14 +41,27 @@ You can use the nm argument to tell **brainyLog** not to display any metadata:
 You can also retrieve tasks in any given state:
 >$ brainyLog g t progress l bake cake
 
-Also, given a line, you can get 5 lines above and below it, including the line itself:
->$ brainyLog g nm u 541763e0-e38d-4e10-9522-0e5212ced4b7 (using the line's uuid).
+Also, given a line, you can get lines above and below it, including the line itself:
 
->$ brainyLog g n 3 (using the line's temporary positional number - be careful, we haven't specified nm here, so it would display the metadata for these lines also). 
+>$ brainyLog g n 3 
+Each line displayed would have a new positional number, overwriting the previous number mappings.
+
+If you want to keep the current number mapping, you can display these lines without the metadata:
+>$ brainyLog g n 3 nm
 
 You can also process tasks, moving them to a different state:
 >$ brainyLog t t complete n 5
 
+And retrieve tasks by state:
+>$ brainyLog g t progress
+
+Or simply all tasks:
+>$ brainyLog g t allTasks
+
+You can delete any logs entered by accident:
+>$ brainyLog d n 3
+
+Find the complete documentation here:  
 
 ## Local Setup
 

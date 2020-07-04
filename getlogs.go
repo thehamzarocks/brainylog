@@ -211,6 +211,8 @@ func getUUIDMatches(lines []string, argsMap map[string]string) (writeBack bool) 
 	return false
 }
 
+// displays lineCount lines before and after the currently selected line, ignoring deleted lines.
+// updates positional mappings if the nm flag is not specified
 func displayLinesInRange(lines []string, index int, lineCount int, hideMetadata string) {
 	var startIndex, endIndex int
 
