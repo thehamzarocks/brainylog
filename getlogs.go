@@ -202,42 +202,65 @@ func getUUIDMatches(lines []string, argsMap map[string]string) (writeBack bool) 
 			if linesToShow == "" {
 				displayLine(line, hideMetadata, "")
 			} else {
-				var startIndex int
-				var endIndex int
-
-				if index-lineCount >= 0 {
-					startIndex = index - lineCount
-				} else {
-					startIndex = 0
-				}
-				if index+lineCount < len(lines) {
-					endIndex = index + lineCount
-				} else {
-					endIndex = len(lines) - 1
-				}
-
-				positionalMappingToUUID := make(map[string]string)
-				pos := 0
-
-				for _, subline := range lines[startIndex : endIndex+1] {
-					if isDeleted(subline) {
-						continue
-					}
-					positionalMappingToUUID[strconv.Itoa(pos)] = getUUID(subline)
-					displayLine(subline, hideMetadata, strconv.Itoa(pos))
-					pos++
-				}
-
-				// create new positional mappings only if line metadata is displayed
-				if hideMetadata != "hideMetadata" {
-					createPositionalMappingFile(positionalMappingToUUID)
-				}
+				displayLinesInRange(lines, index, lineCount, hideMetadata)
 			}
 			break
 		}
 	}
 	fmt.Println("")
 	return false
+}
+
+func displayLinesInRange(lines []string, index int, lineCount int, hideMetadata string) {
+	var startIndex, endIndex int
+
+	currentIndex := index - 1
+	linesCounted := 0
+	for currentIndex >= 0 && linesCounted < lineCount {
+		if !isDeleted(lines[currentIndex]) {
+			linesCounted++
+		}
+		currentIndex--
+	}
+	startIndex = currentIndex + 1
+
+	currentIndex = index + 1
+	linesCounted = 0
+	for currentIndex < (len(lines)) && linesCounted < lineCount {
+		if !isDeleted(lines[currentIndex]) {
+			linesCounted++
+		}
+		currentIndex++
+	}
+	endIndex = currentIndex
+
+	// if index-lineCount >= 0 {
+	// 	startIndex = index - lineCount
+	// } else {
+	// 	startIndex = 0
+	// }
+	// if index+lineCount < len(lines) {
+	// 	endIndex = index + lineCount
+	// } else {
+	// 	endIndex = len(lines) - 1
+	// }
+
+	positionalMappingToUUID := make(map[string]string)
+	pos := 0
+
+	for _, subline := range lines[startIndex : endIndex+1] {
+		if isDeleted(subline) {
+			continue
+		}
+		positionalMappingToUUID[strconv.Itoa(pos)] = getUUID(subline)
+		displayLine(subline, hideMetadata, strconv.Itoa(pos))
+		pos++
+	}
+
+	// create new positional mappings only if line metadata is displayed
+	if hideMetadata != "hideMetadata" {
+		createPositionalMappingFile(positionalMappingToUUID)
+	}
 }
 
 func displayLine(line string, hideMetadata string, positionalNumber string) {
