@@ -41,19 +41,22 @@ func processFile(processLines lineProcessorFn, argsMap map[string]string) {
 	}
 }
 
+func getMatchScore(line string, keywords []string) (score int) {
+	return 5
+}
+
 func isDeleted(line string) bool {
 	return getMetadataValue(line, "S", 2) == "01"
 }
 
 func getSearchTextMatches(lines []string, argsMap map[string]string) (writeBack bool) {
 	searchText := argsMap["searchText"]
-	searchType := argsMap["searchType"]
+	// searchType := argsMap["searchType"]
 	hideMetadata := argsMap["hideMetadata"]
 
-	positionalMappingToUUID := make(map[string]string)
-	currentPos := 0
-
 	fmt.Println("Getting matches for searchtext: ", searchText+"\n")
+
+	matchingItems := make(map[string]int, 0)
 
 	for _, line := range lines {
 		if isDeleted(line) {
@@ -62,18 +65,39 @@ func getSearchTextMatches(lines []string, argsMap map[string]string) (writeBack 
 
 		keywords := strings.Split(searchText, " ")
 
-		for _, keyword := range keywords {
-			if lineMatches(line, searchType, keyword) {
-				positionalMappingToUUID[strconv.Itoa(currentPos)] = getUUID(line)
-				if hideMetadata == "hideMetadata" {
-					fmt.Println(getLineContent(line))
-				} else {
-					fmt.Println(getLineContent(line) + " [" + strconv.Itoa(currentPos) + "]")
-				}
-				currentPos++
-				break
-			}
+		matchScore := getMatchScore(line, keywords)
+
+		if matchScore > 0 {
+			matchingItems[line] = matchScore
 		}
+	}
+
+	scoreRankedMatches := getPriorityRankedItems(matchingItems)
+	// for _, keyword := range keywords {
+	// 	if lineMatches(line, searchType, keyword) {
+	// 		matchingItems[line] = getMatchScore(line)
+	// 		positionalMappingToUUID[strconv.Itoa(currentPos)] = getUUID(line)
+	// 		if hideMetadata == "hideMetadata" {
+	// 			fmt.Println(getLineContent(line))
+	// 		} else {
+	// 			fmt.Println(getLineContent(line) + " [" + strconv.Itoa(currentPos) + "]")
+	// 		}
+	// 		currentPos++
+	// 		break
+	// 	}
+	// }
+
+	positionalMappingToUUID := make(map[string]string)
+	currentPos := 0
+
+	for _, match := range scoreRankedMatches {
+		positionalMappingToUUID[strconv.Itoa(currentPos)] = getUUID(match)
+		if hideMetadata == "hideMetadata" {
+			fmt.Println(getLineContent(match))
+		} else {
+			fmt.Println(getLineContent(match) + " [" + strconv.Itoa(currentPos) + "]")
+		}
+		currentPos++
 	}
 
 	fmt.Println("")
