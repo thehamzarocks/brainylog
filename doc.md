@@ -2,6 +2,9 @@
 
 **BrainyLog** lets you log stuff so you can access it quickly when you can't remember it later. It lets you worry less about the interface, and more about what you're actually logging and retrieving.
 
+### The log.bl file:  
+Before you can run any commands though, create an empty log.bl file in your current directory. **BrainyLog** will warn if this file does not exist in the current directory. This file is used to store all your logs, so be careful with it!  
+
 ### Command structure:
 All **BrainyLog** commands have the following structure:  
 brainyLog < command > < flags > < key - value pairs >  
