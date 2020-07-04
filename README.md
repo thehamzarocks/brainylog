@@ -25,7 +25,7 @@ This works the same as the above command, except it adds a task "Bake a cake." T
 
 Retrieve information:
 
->$ brainyLog g
+>$ brainyLog g  
 This simply retrieves all the logs that haven't been deleted.
 
 >$ brainylog g l bake cake.  
