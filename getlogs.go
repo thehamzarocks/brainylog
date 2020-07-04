@@ -41,8 +41,16 @@ func processFile(processLines lineProcessorFn, argsMap map[string]string) {
 	}
 }
 
-func getMatchScore(line string, keywords []string) (score int) {
-	return 5
+func getMatchScore(line string, searchType string, keywords []string) (score float64) {
+	searchText := strings.Join(keywords, " ")
+	if !lineMatches(line, searchType, searchText) {
+		return -1
+	}
+
+	lineContent := getLineContent(line)
+	tfScore := getTfScore(lineContent, keywords)
+	exactMatchScore := getExactMatchScore(lineContent, searchText)
+	return tfScore + exactMatchScore
 }
 
 func isDeleted(line string) bool {
@@ -51,12 +59,12 @@ func isDeleted(line string) bool {
 
 func getSearchTextMatches(lines []string, argsMap map[string]string) (writeBack bool) {
 	searchText := argsMap["searchText"]
-	// searchType := argsMap["searchType"]
+	searchType := argsMap["searchType"]
 	hideMetadata := argsMap["hideMetadata"]
 
 	fmt.Println("Getting matches for searchtext: ", searchText+"\n")
 
-	matchingItems := make(map[string]int, 0)
+	matchingItems := make(map[string]float64, 0)
 
 	for _, line := range lines {
 		if isDeleted(line) {
@@ -65,7 +73,7 @@ func getSearchTextMatches(lines []string, argsMap map[string]string) (writeBack 
 
 		keywords := strings.Split(searchText, " ")
 
-		matchScore := getMatchScore(line, keywords)
+		matchScore := getMatchScore(line, searchType, keywords)
 
 		if matchScore > 0 {
 			matchingItems[line] = matchScore
@@ -260,9 +268,21 @@ func getLineContent(line string) string {
 	return line[contentStartIndex:]
 }
 
+// returns true/false based on whether the line matches any keyword in the searchText
 func lineMatches(line string, searchType string, searchText string) (lineMatches bool) {
 	lineContent := getLineContent(line)
-	if !strings.Contains(strings.ToLower(lineContent), strings.ToLower(searchText)) {
+
+	keyWords := strings.Split(searchText, " ")
+	containsMatchingKeyword := false
+
+	for _, keyWord := range keyWords {
+		if strings.Contains(strings.ToLower(lineContent), strings.ToLower(keyWord)) {
+			containsMatchingKeyword = true
+			break
+		}
+	}
+
+	if !containsMatchingKeyword {
 		return false
 	}
 
