@@ -59,7 +59,7 @@ Note: If conflicting keys (eg n and l) are specified in the same g command, the 
 
 Eg:  
 >$ brainyLog g l search for this  
->$brainyLog g n 3 m 4 nm
+>$ brainyLog g n 3 m 4 nm
 
 
 ### Process a task:
