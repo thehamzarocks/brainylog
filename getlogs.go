@@ -9,14 +9,15 @@ import (
 	"strings"
 )
 
-type lineProcessorFn func(lines []string, argsMap map[string]string) (writeBack bool)
+type lineProcessorFn func(lines []string, argsMap map[string]string) (linesToWrite []string, shouldWriteLines bool)
 
 func processFile(processLines lineProcessorFn, argsMap map[string]string) {
 
 	filename := defaultFilePath
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
-		fmt.Println("Unable to find log! Check if log.bl exists in the current directory and it's not currently open!")
+		fmt.Println("Unable to write log! Check if log.bl exists in the current directory and it's not currently open!")
+		fmt.Println("If no log.bl exists in the current directory, you can create an empty one here, but it will start empty!")
 		return
 	}
 
@@ -28,10 +29,10 @@ func processFile(processLines lineProcessorFn, argsMap map[string]string) {
 	}
 	lines = lines[:len(lines)-1]
 
-	writeBack := processLines(lines, argsMap)
+	linesToWrite, shouldWriteLines := processLines(lines, argsMap)
 
-	if writeBack {
-		output := strings.Join(lines, "\n")
+	if shouldWriteLines {
+		output := strings.Join(linesToWrite, "\n")
 		output += "\n"
 		err = ioutil.WriteFile(defaultFilePath, []byte(output), 0644)
 
@@ -57,7 +58,7 @@ func isDeleted(line string) bool {
 	return getMetadataValue(line, "S", 2) == "01"
 }
 
-func getSearchTextMatches(lines []string, argsMap map[string]string) (writeBack bool) {
+func getSearchTextMatches(lines []string, argsMap map[string]string) (linesToWrite []string, shouldWriteLines bool) {
 	searchText := argsMap["searchText"]
 	searchType := argsMap["searchType"]
 	hideMetadata := argsMap["hideMetadata"]
@@ -111,7 +112,7 @@ func getSearchTextMatches(lines []string, argsMap map[string]string) (writeBack 
 	fmt.Println("")
 	createPositionalMappingFile(positionalMappingToUUID)
 
-	return false
+	return lines, false
 }
 
 func processBrainyLogRead(commandMap map[string]string) {
@@ -178,7 +179,7 @@ func processBrainyLogRead(commandMap map[string]string) {
 
 }
 
-func getUUIDMatches(lines []string, argsMap map[string]string) (writeBack bool) {
+func getUUIDMatches(lines []string, argsMap map[string]string) (linesToWrite []string, shouldWriteLines bool) {
 	lineUUID := argsMap["uuid"]
 	linesToShow := argsMap["linesToShow"]
 	hideMetadata := argsMap["hideMetadata"]
@@ -208,7 +209,7 @@ func getUUIDMatches(lines []string, argsMap map[string]string) (writeBack bool) 
 		}
 	}
 	fmt.Println("")
-	return false
+	return lines, false
 }
 
 // displays lineCount lines before and after the currently selected line, ignoring deleted lines.

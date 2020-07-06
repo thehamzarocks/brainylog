@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -22,44 +21,43 @@ func processBrainyLogWrite(commandMap map[string]string) {
 	}
 
 	_, isTask := commandMap["t"]
-	if isTask {
-		addTaskLog(log)
-		return
-	}
-	addInfoLog(log)
+
+	temporalPosition := commandMap["n"]
+
+	argsMap := make(map[string]string)
+	argsMap["log"] = log
+	argsMap["isTask"] = strconv.FormatBool(isTask)
+	argsMap["temporalPosition"] = temporalPosition
+	processFile(addLog, argsMap)
 	return
 }
 
-func addInfoLog(log string) {
-	filename := defaultFilePath
-	line := processLine("info", log)
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
+func addLog(lines []string, argsMap map[string]string) (linesToWrite []string, shouldWriteLines bool) {
+	log := argsMap["log"]
+	// temporalPosition := argsMap["temporalPosition"]
+
+	isTask, err := strconv.ParseBool(argsMap["isTask"])
 	if err != nil {
-		fmt.Println("Unable to write log! Check if log.bl exists in the current directory and it's not currently open!")
-		fmt.Println("If no log.bl exists in the current directory, you can create an empty one here, but it will start empty!")
-		return
+		fmt.Println("Unexpected error while parsing task flag!")
+		return lines, false
 	}
-	defer f.Close()
 
-	if _, err = f.WriteString(line + "\n"); err != nil {
-		panic(err)
+	var line string
+	if isTask {
+		line = processLine("task", log)
+	} else {
+		line = processLine("info", log)
 	}
-	fmt.Println("Info logged:\n\n" + line + "\n")
-}
 
-func addTaskLog(log string) {
-	filename := defaultFilePath
-	line := processLine("task", log)
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
+	lines = append(lines, line)
 
-	if _, err = f.WriteString(line + "\n"); err != nil {
-		panic(err)
+	if isTask {
+		fmt.Println("Task logged:\n\n" + line + "\n")
+	} else {
+		fmt.Println("Info logged:\n\n" + line + "\n")
 	}
-	fmt.Println("Task Logged:\n\n" + line + "\n")
+
+	return lines, true
 }
 
 func processLine(logType string, log string) string {

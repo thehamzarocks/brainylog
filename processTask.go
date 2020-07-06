@@ -65,7 +65,7 @@ func getUUIDFromTemporaryPositionalNumber(temporaryPositionalNumber string) (str
 	return uuid, nil
 }
 
-func changeTaskState(lines []string, argsMap map[string]string) (writeBack bool) {
+func changeTaskState(lines []string, argsMap map[string]string) (linesToWrite []string, shouldWriteLines bool) {
 	taskUUID := argsMap["taskUUID"]
 	toState := argsMap["toState"]
 
@@ -95,7 +95,7 @@ func changeTaskState(lines []string, argsMap map[string]string) (writeBack bool)
 		fmt.Println("Something went wrong while editing task state!")
 	}
 
-	return true
+	return lines, true
 }
 
 func getUUID(line string) string {

@@ -37,7 +37,7 @@ func processDeleteLog(commandMap map[string]string) {
 	}
 }
 
-func deleteLine(lines []string, argsMap map[string]string) (writeBack bool) {
+func deleteLine(lines []string, argsMap map[string]string) (linesToWrite []string, shouldWriteLines bool) {
 
 	uuid := argsMap["uuid"]
 
@@ -53,5 +53,5 @@ func deleteLine(lines []string, argsMap map[string]string) (writeBack bool) {
 		}
 	}
 
-	return true
+	return lines, true
 }

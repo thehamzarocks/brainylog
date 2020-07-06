@@ -64,7 +64,7 @@ func isFlag(command string, token string) bool {
 func isSingleValuedKey(command string, token string) bool {
 	switch command {
 	case "a":
-		return false
+		return token == "n"
 	case "g":
 		return token == "t" || token == "n" || token == "u" || token == "m"
 	case "t":
@@ -89,21 +89,26 @@ func isMultiValuedKey(command string, token string) bool {
 	panic("Invalid command " + command + "!")
 }
 
+func isNumber(number string) bool {
+	if _, numberParseError := strconv.Atoi(number); numberParseError != nil {
+		return false
+	}
+	return true
+}
+
 func isValidValueForKey(command string, key string, value string) bool {
 	switch command {
 	case "a":
-		return true
+		if key == "n" {
+			return isNumber(value)
+		}
 	case "g":
 		if key == "t" {
 			return !(value != "allTasks" && value != "create" && value != "progress" && value != "suspend" && value != "cancel" && value != "complete")
 		}
 		if key == "m" {
-			if _, numberParseError := strconv.Atoi(value); numberParseError != nil {
-				return false
-			}
-			return true
+			return isNumber(value)
 		}
-		return true
 	case "t":
 		if key == "t" {
 			return !(value != "create" && value != "progress" && value != "suspend" && value != "cancel" && value != "complete")
