@@ -102,13 +102,15 @@ func isValidValueForKey(command string, key string, value string) bool {
 		if key == "n" {
 			return isNumber(value)
 		}
+		return true
 	case "g":
 		if key == "t" {
 			return !(value != "allTasks" && value != "create" && value != "progress" && value != "suspend" && value != "cancel" && value != "complete")
 		}
-		if key == "m" {
+		if key == "n" || key == "m" {
 			return isNumber(value)
 		}
+		return true
 	case "t":
 		if key == "t" {
 			return !(value != "create" && value != "progress" && value != "suspend" && value != "cancel" && value != "complete")

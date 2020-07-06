@@ -9,6 +9,16 @@ import (
 	"github.com/google/uuid"
 )
 
+// returns the 0-indexed line number where the uuid is found
+func getLineNumberFromUUID(lines []string, uuid string) int {
+	for index, line := range lines {
+		if getUUID(line) == uuid {
+			return index
+		}
+	}
+	return -1
+}
+
 func processBrainyLogWrite(commandMap map[string]string) {
 	log, containsLog := commandMap["l"]
 	if !containsLog {
@@ -34,7 +44,7 @@ func processBrainyLogWrite(commandMap map[string]string) {
 
 func addLog(lines []string, argsMap map[string]string) (linesToWrite []string, shouldWriteLines bool) {
 	log := argsMap["log"]
-	// temporalPosition := argsMap["temporalPosition"]
+	temporalPosition := argsMap["temporalPosition"]
 
 	isTask, err := strconv.ParseBool(argsMap["isTask"])
 	if err != nil {
@@ -49,7 +59,25 @@ func addLog(lines []string, argsMap map[string]string) (linesToWrite []string, s
 		line = processLine("info", log)
 	}
 
-	lines = append(lines, line)
+	if temporalPosition == "" {
+		lines = append(lines, line)
+	} else {
+		uuidOfLine, err := getUUIDFromTemporaryPositionalNumber(temporalPosition)
+		if err != nil {
+			fmt.Println("Unexpected error getting line from poitional number!")
+			return lines, false
+		}
+		lineNumber := getLineNumberFromUUID(lines, uuidOfLine)
+		if lineNumber == -1 {
+			fmt.Println("Unexpected error while getting line number!")
+		}
+		lines = append(lines, "")
+		copy(lines[lineNumber+2:], lines[lineNumber+1:])
+		lines[lineNumber+1] = line
+		// remainingPart := lines[lineNumber+1:]
+		// firstPart := append(lines[:lineNumber+1], line)
+		// lines = append(firstPart, remainingPart...)
+	}
 
 	if isTask {
 		fmt.Println("Task logged:\n\n" + line + "\n")
