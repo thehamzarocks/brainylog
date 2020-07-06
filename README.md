@@ -93,6 +93,7 @@ https://howistart.org/posts/go/1/
 >$ touch log.bl
 
 ##### You're good to go!
->$ brainyLog v
+>$ ./brainyLog v  
+(add the binary to your path to call it without the ./)
 
 
