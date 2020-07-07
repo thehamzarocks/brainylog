@@ -33,11 +33,13 @@ func processBrainyLogWrite(commandMap map[string]string) {
 	_, isTask := commandMap["t"]
 
 	temporalPosition := commandMap["n"]
+	_, useImmediatePosition := commandMap["N"]
 
 	argsMap := make(map[string]string)
 	argsMap["log"] = log
 	argsMap["isTask"] = strconv.FormatBool(isTask)
 	argsMap["temporalPosition"] = temporalPosition
+	argsMap["useImmediatePosition"] = strconv.FormatBool(useImmediatePosition)
 	processFile(addLog, argsMap)
 	return
 }
@@ -45,6 +47,12 @@ func processBrainyLogWrite(commandMap map[string]string) {
 func addLog(lines []string, argsMap map[string]string) (linesToWrite []string, shouldWriteLines bool) {
 	log := argsMap["log"]
 	temporalPosition := argsMap["temporalPosition"]
+
+	useImmediatePosition, err := strconv.ParseBool(argsMap["useImmediatePosition"])
+	if err != nil {
+		fmt.Println("Unexpected error while parsing immediate position flag!")
+		return lines, false
+	}
 
 	isTask, err := strconv.ParseBool(argsMap["isTask"])
 	if err != nil {
@@ -59,14 +67,25 @@ func addLog(lines []string, argsMap map[string]string) (linesToWrite []string, s
 		line = processLine("info", log)
 	}
 
-	if temporalPosition == "" {
+	if temporalPosition == "" && !useImmediatePosition {
 		lines = append(lines, line)
 	} else {
-		uuidOfLine, err := getUUIDFromTemporaryPositionalNumber(temporalPosition)
-		if err != nil {
-			fmt.Println("Unexpected error getting line from poitional number!")
-			return lines, false
+		var uuidOfLine string
+		if temporalPosition != "" {
+			uuidOfLine, err = getUUIDFromTemporaryPositionalNumber(temporalPosition)
+			if err != nil {
+				fmt.Println("Unexpected error getting line from poitional number!")
+				return lines, false
+			}
 		}
+		if useImmediatePosition {
+			uuidOfLine, err = getUUIDFromImmediatePosition()
+			if err != nil {
+				fmt.Println("Unexpected error getting imediate line!")
+				return lines, false
+			}
+		}
+
 		lineNumber := getLineNumberFromUUID(lines, uuidOfLine)
 		if lineNumber == -1 {
 			fmt.Println("Unexpected error while getting line number!")
@@ -85,6 +104,7 @@ func addLog(lines []string, argsMap map[string]string) (linesToWrite []string, s
 		fmt.Println("Info logged:\n\n" + line + "\n")
 	}
 
+	setImmediatePositionUUID(getUUID(line))
 	return lines, true
 }
 

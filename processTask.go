@@ -12,8 +12,9 @@ import (
 func processTask(commandMap map[string]string) {
 	taskUUID, containsTaskUUID := commandMap["u"]
 	temporaryPositionalNumber, containsTemporaryPositionalNumber := commandMap["n"]
+	_, useImmediatePosition := commandMap["N"]
 
-	if !containsTaskUUID && !containsTemporaryPositionalNumber {
+	if !containsTaskUUID && !containsTemporaryPositionalNumber && !useImmediatePosition {
 		fmt.Println("Task processing needs a task UUID or temporary positional number!")
 		return
 	}
@@ -45,6 +46,15 @@ func processTask(commandMap map[string]string) {
 		processFile(changeTaskState, argsMap)
 		return
 	}
+	if useImmediatePosition {
+		matchingUUID, err := getUUIDFromImmediatePosition()
+		if err != nil {
+			fmt.Println(err)
+		}
+		argsMap["taskUUID"] = matchingUUID
+		processFile(changeTaskState, argsMap)
+		return
+	}
 }
 
 func getUUIDFromTemporaryPositionalNumber(temporaryPositionalNumber string) (string, error) {
@@ -63,6 +73,33 @@ func getUUIDFromTemporaryPositionalNumber(temporaryPositionalNumber string) (str
 		return "", errors.New("Unable to find line matching positional number " + temporaryPositionalNumber + "!")
 	}
 	return uuid, nil
+}
+
+func getUUIDFromImmediatePosition() (string, error) {
+	filename := "log-immediate-mapping.bl"
+	input, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+
+	lines := strings.Split(string(input), "\n")
+	if len(lines) != 1 {
+		return "", errors.New("File parse error")
+	}
+
+	return lines[0], nil
+}
+
+func setImmediatePositionUUID(uuid string) error {
+	filename := "log-immediate-mapping.bl"
+
+	err := ioutil.WriteFile(filename, []byte(uuid), 0644)
+
+	if err != nil {
+		return errors.New("File write error")
+	}
+
+	return nil
 }
 
 func changeTaskState(lines []string, argsMap map[string]string) (linesToWrite []string, shouldWriteLines bool) {
@@ -88,13 +125,14 @@ func changeTaskState(lines []string, argsMap map[string]string) (linesToWrite []
 		}
 	}
 
-	output := strings.Join(lines, "\n")
-	err := ioutil.WriteFile(defaultFilePath, []byte(output), 0644)
+	// output := strings.Join(lines, "\n")
+	// err := ioutil.WriteFile(defaultFilePath, []byte(output), 0644)
 
-	if err != nil {
-		fmt.Println("Something went wrong while editing task state!")
-	}
+	// if err != nil {
+	// 	fmt.Println("Something went wrong while editing task state!")
+	// }
 
+	setImmediatePositionUUID(taskUUID)
 	return lines, true
 }
 

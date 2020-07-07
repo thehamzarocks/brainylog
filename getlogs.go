@@ -118,6 +118,7 @@ func getSearchTextMatches(lines []string, argsMap map[string]string) (linesToWri
 func processBrainyLogRead(commandMap map[string]string) {
 	searchText, containsSearchText := commandMap["l"]
 	lineNumber, containsLineNumber := commandMap["n"]
+	_, useImmediateFlag := commandMap["N"]
 	lineUUID, containsLineUUID := commandMap["u"]
 	linesToShow := commandMap["m"]
 
@@ -129,6 +130,9 @@ func processBrainyLogRead(commandMap map[string]string) {
 		matchers++
 	}
 	if containsLineNumber {
+		matchers++
+	}
+	if useImmediateFlag {
 		matchers++
 	}
 
@@ -176,6 +180,17 @@ func processBrainyLogRead(commandMap map[string]string) {
 		processFile(getUUIDMatches, argsMap)
 		return
 	}
+	if useImmediateFlag {
+		lineUUID, err := getUUIDFromImmediatePosition()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		argsMap["uuid"] = lineUUID
+		argsMap["linesToShow"] = linesToShow
+		processFile(getUUIDMatches, argsMap)
+		return
+	}
 
 }
 
@@ -202,6 +217,7 @@ func getUUIDMatches(lines []string, argsMap map[string]string) (linesToWrite []s
 		if getUUID(line) == lineUUID {
 			if linesToShow == "" {
 				displayLine(line, hideMetadata, "")
+				setImmediatePositionUUID(lineUUID)
 			} else {
 				displayLinesInRange(lines, index, lineCount, hideMetadata)
 			}

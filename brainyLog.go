@@ -50,13 +50,13 @@ func main() {
 func isFlag(command string, token string) bool {
 	switch command {
 	case "a":
-		return token == "t"
+		return token == "t" || token == "N"
 	case "g":
-		return token == "nm"
+		return token == "nm" || token == "N"
 	case "t":
-		return false
+		return token == "N"
 	case "d":
-		return false
+		return token == "N"
 	}
 	panic("Invalid command!")
 }

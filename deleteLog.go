@@ -8,10 +8,14 @@ func processDeleteLog(commandMap map[string]string) {
 	matches := 0
 	uuidMatcher, containsUUID := commandMap["u"]
 	positionMatcher, containsPosition := commandMap["n"]
+	_, useImmediatePosition := commandMap["N"]
 	if containsUUID {
 		matches++
 	}
 	if containsPosition {
+		matches++
+	}
+	if useImmediatePosition {
 		matches++
 	}
 	if matches != 1 {
@@ -28,6 +32,15 @@ func processDeleteLog(commandMap map[string]string) {
 	}
 	if containsPosition {
 		lineUUID, err := getUUIDFromTemporaryPositionalNumber(positionMatcher)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		argsMap["uuid"] = lineUUID
+		processFile(deleteLine, argsMap)
+		return
+	}
+	if useImmediatePosition {
+		lineUUID, err := getUUIDFromImmediatePosition()
 		if err != nil {
 			fmt.Println(err.Error())
 		}
